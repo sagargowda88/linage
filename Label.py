@@ -9,12 +9,12 @@ def label_csv(csv_file):
 
     # Apply heuristics and pattern matching to assign labels
     for index, row in data.iterrows():
-        if 'missing' in str(row).lower():
+        if any('missing' in str(cell).lower() for cell in row):
             data.at[index, 'class'] = 'missing'
-        elif 'mismatch' in str(row).lower():
-            data.at[index, 'class'] = 'mismatch'
-        elif 'checksum' in str(row).lower():
+        elif any('checksum' in str(cell).lower() for cell in row):
             data.at[index, 'class'] = 'checksum'
+        elif any('mismatch' in str(cell).lower() for cell in row):
+            data.at[index, 'class'] = 'mismatch'
         else:
             data.at[index, 'class'] = 'reconciliation'
 
