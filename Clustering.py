@@ -1,16 +1,19 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+import numpy as np
 
 # Load the CSV file
 data = pd.read_csv('your_file.csv')
 
+# Preprocess the text data
+text_data = data.apply(lambda x: ' '.join(x.astype(str)), axis=1)
+
 # Convert all text data into TF-IDF vectors
 vectorizer = TfidfVectorizer()
-tfidf_matrix = vectorizer.fit_transform(data.values.astype('U'))
+tfidf_matrix = vectorizer.fit_transform(text_data)
 
 # Standardize the features
 scaler = StandardScaler()
@@ -37,13 +40,25 @@ optimal_k = 3  # Adjust this based on the elbow plot
 kmeans = KMeans(n_clusters=optimal_k, random_state=42)
 kmeans.fit(tfidf_matrix_scaled)
 
-# Visualize the clusters (Note: visualization might not be optimal for high-dimensional data)
-# As an alternative, you can reduce the dimensionality using techniques like PCA or t-SNE
-# and then visualize the clusters in lower dimensions.
-# For simplicity, let's skip visualization for now.
+# Visualize the clusters
+cluster_labels = kmeans.labels_
+cluster_centers = kmeans.cluster_centers_
+colors = ['r', 'g', 'b', 'y', 'c', 'm']  # Add more colors if needed
+
+for cluster_label in np.unique(cluster_labels):
+    cluster_indices = np.where(cluster_labels == cluster_label)[0]
+    plt.scatter(tfidf_matrix_scaled[cluster_indices, 0], tfidf_matrix_scaled[cluster_indices, 1],
+                c=colors[cluster_label], label=f'Cluster {cluster_label + 1}')
+
+plt.scatter(cluster_centers[:, 0], cluster_centers[:, 1], s=300, c='black', marker='X', label='Centroids')
+plt.title('Clustered Data')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.legend()
+plt.show()
 
 # Print one data point from each cluster
-for cluster in range(optimal_k):
-    cluster_indices = np.where(kmeans.labels_ == cluster)[0]
+for cluster_label in np.unique(cluster_labels):
+    cluster_indices = np.where(cluster_labels == cluster_label)[0]
     sample_index = cluster_indices[0]
-    print(f"Data point from Cluster {cluster + 1}:\n{data.iloc[sample_index]}")
+    print(f"Data point from Cluster {cluster_label + 1}:\n{data.iloc[sample_index]}")
