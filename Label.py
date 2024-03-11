@@ -9,14 +9,14 @@ def label_csv(csv_file):
 
     # Apply heuristics and pattern matching to assign labels
     for index, row in data.iterrows():
-        if any('missing' in str(cell).lower() for cell in row):
+        if any(keyword.lower() in str(cell).lower() for cell in row for keyword in ['missing']):
             data.at[index, 'class'] = 'missing'
-        elif any('checksum' in str(cell).lower() for cell in row):
+        elif any(keyword.lower() in str(cell).lower() for cell in row for keyword in ['invalid', 'like', 'duplicate']):
             data.at[index, 'class'] = 'checksum'
-        elif any('mismatch' in str(cell).lower() for cell in row):
+        elif any(keyword.lower() in str(cell).lower() for cell in row for keyword in ['mismatch', 'match']):
             data.at[index, 'class'] = 'mismatch'
         else:
-            data.at[index, 'class'] = 'reconciliation'
+            data.at[index, 'class'] = 'others'
 
     # Save the modified dataframe back to CSV
     data.to_csv('labeled_' + csv_file, index=False)
